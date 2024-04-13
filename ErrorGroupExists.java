@@ -9,7 +9,7 @@ public class ErrorGroupExists extends JFrame {
 
     ErrorGroupExists() {
         super();
-        super.setBounds(400, 300, 250, 100);
+        super.setBounds(500, 300, 250, 100);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         super.setLayout(new FlowLayout());
         super.setVisible(true);

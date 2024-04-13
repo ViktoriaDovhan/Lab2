@@ -23,6 +23,7 @@ public class UserInterface extends JFrame {
     private JMenuItem editProduct;
     private JMenuItem editGroupOfProducts;
     private JMenuItem lookFor;
+    private JMenuItem showStaticData;
     String[] one = {"Непродовольчі товари", "Класні товари"};
     String[] two = {"Продовольчі товари", "Хороші товари"};
 
@@ -44,14 +45,14 @@ public class UserInterface extends JFrame {
         BufferedReader readerNeprod = new BufferedReader(new FileReader("C:\\Users\\vika\\Desktop\\Shopping\\NeProd\\NeProd.txt"));
         String str = "";
         while ((str = readerNeprod.readLine()) != null) {
-            neProd.addProductToGroup(new Product(str.split(";")));
+            neProd.addProductToGroup(new Product(str.split(";")), allGroup);
         }
         readerNeprod.close();
 
         BufferedReader readerProd = new BufferedReader(new FileReader("C:\\Users\\vika\\Desktop\\Shopping\\Prod\\Prod.txt"));
         str = "";
         while ((str = readerProd.readLine()) != null) {
-            prod.addProductToGroup(new Product(str.trim().split(";")));
+            prod.addProductToGroup(new Product(str.trim().split(";")), allGroup);
         }
 
         readerProd.close();
@@ -72,6 +73,7 @@ public class UserInterface extends JFrame {
         editProduct = new JMenuItem("Редагувати товар");
         editGroupOfProducts = new JMenuItem("Редагувати групу товарів");
         lookFor = new JMenuItem("Пошук товару");
+        showStaticData = new JMenuItem("Виведення статичних даних");
 
         menu.add(allProducts);
         menu.add(deleteProduct);
@@ -81,6 +83,11 @@ public class UserInterface extends JFrame {
         menu.add(editProduct);
         menu.add(editGroupOfProducts);
         menu.add(lookFor);
+        //Вивід статистичних даних: вивід всіх товарів з інформацією по складу,
+        // вивід усіх товарів по групі товарів з інформацією,
+        // загальна вартість товару на складі (кількість * на ціну),
+        // загальна вартість товарів в групі товарів.
+        menu.add(showStaticData);
         menuBar.add(menu);
         setJMenuBar(menuBar);
 
@@ -97,6 +104,7 @@ public class UserInterface extends JFrame {
         editProduct.addActionListener(menuListener);
         editGroupOfProducts.addActionListener(menuListener);
         lookFor.addActionListener(menuListener);
+        showStaticData.addActionListener(menuListener);
 
         // Додавання слухача подій миші для вкладок (подвійне клацання == закриття вкладки)
         tabbedPane.addMouseListener(new MouseAdapter() {
@@ -124,20 +132,169 @@ public class UserInterface extends JFrame {
 
 //видалити продукт з якоїсь групи
             } else if (e.getSource() == deleteProduct) {
-                if (tabbedPane.indexOfTab(deleteProduct.getText()) == -1) {
-                    tabbedPane.addTab(deleteProduct.getText(), new JPanel());
-                }
+                String tabTitle = lookFor.getText();
+                int tabIndex = tabbedPane.indexOfTab(tabTitle);
 
-//метод для видалення групи продуктів
-            } else if (e.getSource() == deleteGroupOfProducts) {
-                if (tabbedPane.indexOfTab(deleteGroupOfProducts.getText()) == -1) {
-                    tabbedPane.addTab(deleteGroupOfProducts.getText(), new JPanel());
-                }
+                if (tabIndex == -1) {
+                    JPanel newPanel = new JPanel(new GridLayout(17, 1));
 
+                    JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
+                    newPanel.add(showAllGroupsbtn);
+
+                    showAllGroupsbtn.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            newPanel.removeAll();
+
+                            for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                newPanel.add(new JLabel(String.valueOf(group)));
+                            }
+
+                            JTextField textField = new JTextField(20);
+                            newPanel.add(new JLabel());
+                            newPanel.add(new JLabel("Введіть назву групи, з якої хочете видалити продукт: "));
+                            newPanel.add(textField);
+
+                            textField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    String groupName = textField.getText();
+                                    ProductGroup groupToDeleteFrom = null;
+
+                                    // Знаходимо групу за введеною назвою
+                                    for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                        if (groupName.equals(group.getGroupName())) {
+                                            groupToDeleteFrom = group;
+                                            break;
+                                        }
+                                    }
+
+                                    if (groupToDeleteFrom != null) {
+                                        JLabel nameLabel = new JLabel("Введіть назву продукту, який хочете видалити: ");
+                                        JTextField nameField = new JTextField(20);
+                                        JButton deleteButton = new JButton("Видалити");
+
+                                        ProductGroup finalGroupToDeleteFrom = groupToDeleteFrom;
+                                        deleteButton.addActionListener(new ActionListener() {
+                                            @Override
+                                            public void actionPerformed(ActionEvent e) {
+                                                String productName = nameField.getText();
+
+                                                // Перевіряємо, чи існує продукт з введеною назвою у групі
+                                                Product productToDelete = finalGroupToDeleteFrom.getProductByName(productName);
+                                                if (productToDelete != null) {
+                                                    try {
+                                                        finalGroupToDeleteFrom.removeProductFromGroup(productToDelete);
+                                                    } catch (IOException ex) {
+                                                        System.out.println("Товар не знайдено");
+                                                    }
+                                                    new SuccessProductDeleting();
+                                                } else {
+                                                    new ErrorProductExists();
+                                                }
+                                            }
+                                        });
+
+                                        newPanel.add(nameLabel);
+                                        newPanel.add(nameField);
+                                        newPanel.add(deleteButton);
+
+                                        newPanel.revalidate();
+                                        newPanel.repaint();
+                                    } else {
+                                        new ErrorGroupExists();
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    tabbedPane.addTab(tabTitle, newPanel);
+                }
+            }
+
+
+
+/**метод для видалення групи продуктів
+ *
+ */
+            else if (e.getSource() == deleteGroupOfProducts) {
+                String tabTitle = lookFor.getText();
+                int tabIndex = tabbedPane.indexOfTab(tabTitle);
+
+                if (tabIndex == -1) {
+                    // Вкладка ще не існує, створюємо нову вкладку
+                    JPanel newPanel = new JPanel(new GridLayout(17, 1));
+
+                    // Створюємо кнопку
+                    JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
+
+                    // Додаємо кнопку на панель
+                    newPanel.add(showAllGroupsbtn);
+
+                    showAllGroupsbtn.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // Очищаємо вміст панелі перед додаванням нових елементів
+                            newPanel.removeAll();
+
+                            for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                newPanel.add(new JLabel(String.valueOf(group)));
+                            }
+
+                            JTextField textField = new JTextField(20);
+                            newPanel.add(new JLabel());
+                            newPanel.add(new JLabel("Введіть назву групи, яку хочете видалити: "));
+                            newPanel.add(textField);
+
+                            textField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    boolean found = false;
+
+                                    for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                        if (textField.getText().equals(group.getGroupName())) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (found) {
+
+                                        JButton delete = new JButton("Видалити");
+                                        delete.addActionListener(new ActionListener() {
+                                            @Override
+                                            public void actionPerformed(ActionEvent e) {
+                                                if (e.getSource() == delete) {
+
+                                                    allGroup.removeGroup(textField.getText());
+
+                                                    newPanel.revalidate();
+                                                    newPanel.repaint();
+                                                }
+                                            }
+                                        });
+                                        newPanel.add(delete);
+
+                                        // Оновлюємо вміст панелі
+                                        newPanel.revalidate();
+                                        newPanel.repaint();
+                                    } else {
+                                        new ErrorGroupDeleting();
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    // Додаємо нову панель на вкладку
+                    tabbedPane.addTab(tabTitle, newPanel);
+                }
+            }
 /**додавання продукту в якусь групу
  *
  */
-            } else if (e.getSource() == addProduct) {
+            else if (e.getSource() == addProduct) {
                 String tabTitle = lookFor.getText();
                 int tabIndex = tabbedPane.indexOfTab(tabTitle);
 
@@ -222,7 +379,7 @@ public class UserInterface extends JFrame {
                                                     for (ProductGroup group : allGroup.getAllGroupArray()) {
                                                         if (textField.getText().equals(group.getGroupName())) {
                                                             try {
-                                                                group.addProductToGroup(product);
+                                                                group.addProductToGroup(product, allGroup);
                                                             } catch (IOException ex) {
                                                                 throw new RuntimeException(ex);
                                                             }
@@ -397,6 +554,49 @@ public class UserInterface extends JFrame {
                             newPanel.repaint();
                         }
                     });
+                }
+
+/**
+ * Виводимо статичні дані на екран
+ */
+            } else if (e.getSource() == showStaticData) {
+                String tabTitle = lookFor.getText();
+                int tabIndex = tabbedPane.indexOfTab(tabTitle);
+                if (tabIndex == -1) {
+                    // Вкладка ще не існує, створюємо нову вкладку і додаємо на неї текстове поле
+                    JPanel newPanel = new JPanel();
+                    newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.Y_AXIS)); // Встановлюємо LayoutManager
+
+                    // Перебираємо всі групи товарів
+                    for (ProductGroup group : allGroup.getAllGroupArray()) {
+                        // Створюємо JLabel для назви групи
+                        JLabel groupLabel = new JLabel("Група: " + group.toString());
+                        newPanel.add(new JLabel("\n"));
+                        newPanel.add(new JLabel("***"));
+                        newPanel.add(groupLabel);
+
+                        // Отримуємо загальну вартість товарів у групі
+                        double totalGroupValue = Products.getTotalGroupValue(group);
+                        newPanel.add(new JLabel("\n"));
+                        JLabel totalGroupValueLabel = new JLabel("Загальна вартість у групі: " + totalGroupValue);
+
+                        newPanel.add(totalGroupValueLabel);
+
+                        // Перебираємо всі продукти у групі і створюємо для них JLabel
+                        for (Product product : group.getArrayOfProducts()) {
+                            JLabel productLabel = new JLabel("Продукт: " + product.toString());
+                            newPanel.add(productLabel);
+                        }
+                    }
+
+                    // Отримуємо загальну вартість товару на складі
+                    double totalStockValue = Products.getTotalStockValue(allGroup);
+                    JLabel totalStockValueLabel = new JLabel("Загальна вартість на складі: " + totalStockValue);
+                    newPanel.add(new JLabel("\n"));
+                    newPanel.add(totalStockValueLabel);
+
+                    // Додаємо нову вкладку з панеллю у табпенел
+                    tabbedPane.addTab(tabTitle, newPanel);
                 }
             }
 

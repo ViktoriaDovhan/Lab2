@@ -2,6 +2,7 @@
 клас, який містить в собі всі групи товарів
  */
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class Products {
@@ -34,10 +35,38 @@ public class Products {
         }
 
         if (groupToRemove != null) {
+            removeGroupFromFile(groupToRemove);
             allGroup.remove(groupToRemove);
         }
     }
 
+    public void removeGroupFromFile(ProductGroup pg) {
+        // Отримуємо файл групи
+        File groupFile = pg.getFile();
+
+        // Перевіряємо, чи файл існує та чи є він директорією
+        if (groupFile.exists() && groupFile.isDirectory()) {
+            // Отримуємо список файлів у директорії
+            File[] files = groupFile.listFiles();
+
+            // Перевіряємо кожен файл у директорії
+            if (files != null) {
+                for (File file : files) {
+                    // Перевіряємо, чи файл є текстовим файлом і видаляємо його
+                    if (file.isFile()) {
+                        file.delete();
+                    }
+                }
+            }
+
+            // Видаляємо саму директорію (групу)
+            if (groupFile.delete()) {
+                new SuccessGroupDeleting();
+            } else {
+                new ErrorGroupDeleting();
+            }
+        }
+    }
 
     public ArrayList<ProductGroup> getAllGroupArray() {
         return allGroup;
@@ -66,6 +95,36 @@ public class Products {
             }
         }
         return null; // Якщо групу не знайдено
+    }
+
+    public static double getTotalStockValue(Products allGroups) {
+        double totalValue = 0.0;
+
+        // Перебираємо всі групи товарів
+        for (ProductGroup group : allGroups.getAllGroupArray()) {
+            // Перебираємо всі продукти у групі
+            for (Product product : group.getArrayOfProducts()) {
+                double price = product.getPrice();
+                int quantity = product.getQuantity();
+                totalValue += price * quantity; // Додаємо вартість цього товару до загальної вартості
+            }
+        }
+
+        return totalValue;
+    }
+
+    // Отримання загальної вартості товарів у заданій групі
+    public static double getTotalGroupValue(ProductGroup group) {
+        double totalValue = 0.0;
+
+        // Перебираємо всі продукти у групі
+        for (Product product : group.getArrayOfProducts()) {
+            double price = product.getPrice();
+            int quantity = product.getQuantity();
+            totalValue += price * quantity; // Додаємо вартість цього товару до загальної вартості
+        }
+
+        return totalValue;
     }
 
 }
