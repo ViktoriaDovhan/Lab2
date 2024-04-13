@@ -3,17 +3,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class SuccessAdding extends JFrame {
+public class ErrorProductAdding extends JFrame {
     JButton okButton;
 
-    SuccessAdding() {
+    ErrorProductAdding() {
         super();
-        super.setBounds(400, 300, 250, 100);
+        super.setBounds(400, 200, 250, 100);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         super.setLayout(new FlowLayout());
         super.setVisible(true);
 
-        JLabel errorLabel = new JLabel("Продукт успішно доданий! ");
+        JLabel errorLabel = new JLabel("Продукт не було додано, адже такий вже існує");
         okButton = new JButton("OK");
         okButton.addActionListener(new WrongListener());
 

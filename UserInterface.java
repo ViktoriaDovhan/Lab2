@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -22,13 +23,15 @@ public class UserInterface extends JFrame {
     private JMenuItem editProduct;
     private JMenuItem editGroupOfProducts;
     private JMenuItem lookFor;
+    String[] one = {"Непродовольчі товари", "Класні товари"};
+    String[] two = {"Продовольчі товари", "Хороші товари"};
 
 
     //заповнюємо масив прод і непрод СТРІЧОК
 
     Products allGroup = new Products();
-    ProductGroup neProd = new ProductGroup("C:\\Users\\vika\\Desktop\\Shopping\\NeProd", "Класні товари", "Непродовольчі товари");
-    ProductGroup prod = new ProductGroup("C:\\Users\\vika\\Desktop\\Shopping\\Prod", "Хороші товари", "Продовольчі товари");
+    ProductGroup neProd = new ProductGroup("C:\\Users\\vika\\Desktop\\Shopping\\NeProd", one);
+    ProductGroup prod = new ProductGroup("C:\\Users\\vika\\Desktop\\Shopping\\Prod", two);
 
     UserInterface() throws IOException {
         super("Головна сторінка");
@@ -218,7 +221,11 @@ public class UserInterface extends JFrame {
                                                     // Додаємо продукт до відповідної групи
                                                     for (ProductGroup group : allGroup.getAllGroupArray()) {
                                                         if (textField.getText().equals(group.getGroupName())) {
-                                                            group.addProductToGroup(product);
+                                                            try {
+                                                                group.addProductToGroup(product);
+                                                            } catch (IOException ex) {
+                                                                throw new RuntimeException(ex);
+                                                            }
 
                                                             break;
                                                         }
@@ -245,66 +252,97 @@ public class UserInterface extends JFrame {
             }
 
 
-//додавання групи до усіх груп продуктів
+/**додавання групи до усіх груп продуктів
+ *
+ */
             else if (e.getSource() == addGroupOfProducts) {
-                {
-                    String tabTitle = lookFor.getText();
-                    int tabIndex = tabbedPane.indexOfTab(tabTitle);
+                String tabTitle = lookFor.getText();
+                int tabIndex = tabbedPane.indexOfTab(tabTitle);
 
-                    if (tabIndex == -1) {
-                        // Вкладка ще не існує, створюємо нову вкладку
-                        JPanel newPanel = new JPanel(new GridLayout(17, 1));
+                if (tabIndex == -1) {
+                    // Вкладка ще не існує, створюємо нову вкладку
+                    JPanel newPanel = new JPanel(new GridLayout(17, 1));
 
-                        // Створюємо кнопку
-                        JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
+                    // Створюємо кнопку
+                    JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
 
-                        // Додаємо кнопку на панель
-                        newPanel.add(showAllGroupsbtn);
+                    // Додаємо кнопку на панель
+                    newPanel.add(showAllGroupsbtn);
 
-                        showAllGroupsbtn.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                // Очищаємо вміст панелі перед додаванням нових елементів
-                                newPanel.removeAll();
+                    showAllGroupsbtn.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            // Очищаємо вміст панелі перед додаванням нових елементів
+                            newPanel.removeAll();
 
-                                for (ProductGroup group : allGroup.getAllGroupArray()) {
-                                    newPanel.add(new JLabel(String.valueOf(group)));
-                                }
+                            for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                newPanel.add(new JLabel(String.valueOf(group)));
+                            }
 
-                                JTextField textField = new JTextField(20);
-                                newPanel.add(new JLabel());
-                                newPanel.add(new JLabel("Введіть назву групи, яку хочете: "));
-                                newPanel.add(textField);
+                            JTextField textField = new JTextField(20);
+                            newPanel.add(new JLabel());
+                            newPanel.add(new JLabel("Введіть назву групи, яку хочете додати: "));
+                            newPanel.add(textField);
 
-                                textField.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        boolean found = false;
+                            textField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    boolean found = false;
 
-                                        for (ProductGroup group : allGroup.getAllGroupArray()) {
-                                            if (textField.getText().equals(group.getGroupName())) {
-                                                found = true;
-                                                break;
-                                            }
-                                        }
-
-                                        if (!found) {
-
-                                        } else{
-
+                                    for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                        if (textField.getText().equals(group.getGroupName())) {
+                                            found = true;
+                                            break;
                                         }
                                     }
-                                });
-                            }
-                        });
 
-                        // Додаємо нову панель на вкладку
-                        tabbedPane.addTab(tabTitle, newPanel);
-                    }
+                                    if (found) {
+                                        new ErrorGroupAdding();
+                                    } else {
+                                        // Додати додаткові компоненти для введення даних продукту
+                                        newPanel.add(new JLabel("Введіть опис групи: "));
+                                        JTextField descriptionField = new JTextField(20);
+                                        newPanel.add(descriptionField);
+
+
+                                        JButton create = new JButton("Створити");
+                                        create.addActionListener(new ActionListener() {
+                                            @Override
+                                            public void actionPerformed(ActionEvent e) {
+                                                if (e.getSource() == create) {
+                                                    // Збираємо дані для створення продукту
+                                                    String[] productData = {
+                                                            textField.getText(),
+                                                            descriptionField.getText()
+                                                    };
+                                                    // Створюємо новий продукт
+
+                                                    ProductGroup newGroup = new ProductGroup("C:\\Users\\vika\\Desktop\\Shopping\\" + textField.getText(), productData);
+                                                    // Додаємо продукт до відповідної групи
+                                                    allGroup.addGroupToAllGroup(newGroup);
+
+                                                    newPanel.revalidate();
+                                                    newPanel.repaint();
+                                                }
+                                            }
+                                        });
+                                        newPanel.add(create);
+
+                                        // Оновлюємо вміст панелі
+                                        newPanel.revalidate();
+                                        newPanel.repaint();
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    // Додаємо нову панель на вкладку
+                    tabbedPane.addTab(tabTitle, newPanel);
                 }
-
+            }
 //редагування інформації про продукт
-            }else if (e.getSource() == editProduct) {
+            else if (e.getSource() == editProduct) {
                 if (tabbedPane.indexOfTab(editProduct.getText()) == -1) {
                     tabbedPane.addTab(editProduct.getText(), new JPanel());
                 }

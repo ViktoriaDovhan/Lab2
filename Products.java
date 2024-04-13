@@ -19,6 +19,7 @@ public class Products {
 
         if (!exists) {
             allGroup.add(productGroup);
+            new SuccessGroupAdding();
         }
     }
 
