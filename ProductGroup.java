@@ -74,26 +74,6 @@ public class ProductGroup {
     }
 
 
-    //видаляємо продукт з групи
-    public void deleteProductFile(String productName) {
-        String directoryPath = "C:\\Users\\vika\\Desktop\\Shopping";
-        String fileName = productName + ".txt"; // Припускаємо, що файли продуктів мають розширення ".txt"
-
-        File directory = new File(directoryPath);
-        File file = new File(directory, fileName);
-
-        if (file.exists()) {
-            boolean deleted = file.delete();
-            if (deleted) {
-                System.out.println("Файл " + fileName + " успішно видалено.");
-            } else {
-                System.out.println("Не вдалося видалити файл " + fileName + ".");
-            }
-        } else {
-            System.out.println("Файл " + fileName + " не існує.");
-        }
-    }
-
     public void addProductToGroup(Product product, Products allGroups) throws IOException {
         boolean productExists = false;
 
@@ -172,7 +152,6 @@ public class ProductGroup {
     public void removeSomeProductInFile(Product product) throws IOException {
         // Отримуємо шлях до файлу
         String filePath = file.getPath() + "\\" + file.getName() + ".txt";
-        System.out.println(filePath);
 
         // Перевіряємо, чи файл існує
         File originalFile = new File(filePath);

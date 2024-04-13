@@ -8,6 +8,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class UserInterface extends JFrame {
     private JTabbedPane tabbedPane;
@@ -186,9 +188,8 @@ public class UserInterface extends JFrame {
                                                     try {
                                                         finalGroupToDeleteFrom.removeProductFromGroup(productToDelete);
                                                     } catch (IOException ex) {
-                                                        System.out.println("Товар не знайдено");
+                                                        new ErrorGroupDeleting();
                                                     }
-                                                    new SuccessProductDeleting();
                                                 } else {
                                                     new ErrorProductExists();
                                                 }
@@ -212,7 +213,6 @@ public class UserInterface extends JFrame {
                     tabbedPane.addTab(tabTitle, newPanel);
                 }
             }
-
 
 
 /**метод для видалення групи продуктів
@@ -531,7 +531,9 @@ public class UserInterface extends JFrame {
                     // Вкладка ще не існує, створюємо нову вкладку і додаємо на неї текстове поле
                     JPanel newPanel = new JPanel();
                     JLabel label = new JLabel("Введіть назву товару");
-                    JTextField textField = new JTextField(20); // Створення текстового поля
+                    newPanel.setLayout(new GridLayout(17,1));
+                    JTextField textField = new JTextField(); // Створення текстового поля
+
                     newPanel.add(label);
                     newPanel.add(textField); // Додавання текстового поля на нову панель
                     tabbedPane.addTab(tabTitle, newPanel); // Додавання нової вкладки разом з панеллю
@@ -539,15 +541,32 @@ public class UserInterface extends JFrame {
                     // Логіка з пошуком товару
                     textField.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent event) {
-                            String productName = textField.getText();
-                            Product foundProduct = allGroup.findProductByName(productName);
-                            if (foundProduct != null) {
-                                // Створення та налаштування вмісту вкладки знайденого товару
-                                JLabel productInfoLabel = new JLabel(String.valueOf(foundProduct));
-                                // Додавання тексту з інформацією про продукт
-                                newPanel.add(productInfoLabel);
+                            String productNamePattern = textField.getText().replace("?", ".{1}").replace("*", ".*");
+                            Pattern pattern = Pattern.compile(productNamePattern, Pattern.CASE_INSENSITIVE);
+                            ArrayList<Product> matchingProducts = new ArrayList<>();
+
+                            // Проходження по всіх продуктах у всіх групах
+                            for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                for (Product product : group.getArrayOfProducts()) {
+                                    if (pattern.matcher(product.getProductName()).matches()) {
+                                        matchingProducts.add(product);
+                                    }
+                                }
+                            }
+                                newPanel.add(new JScrollPane());
+
+                            if (!matchingProducts.isEmpty()) {
+                                // Створення текстового поля для відображення знайдених продуктів
+                                JLabel productInfoArea = new JLabel();
+
+                                // Додавання інформації про знайдені продукти
+                                for (Product product : matchingProducts) {
+                                    newPanel.add(new JLabel(product.toString() + "\n"));
+                                }
+
+
                             } else {
-                                JOptionPane.showMessageDialog(null, "Товар не знайдено.", "Помилка", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Товари не знайдено.", "Помилка", JOptionPane.ERROR_MESSAGE);
                             }
                             // Перемальовуємо панель для оновлення вмісту
                             newPanel.revalidate();
@@ -555,11 +574,12 @@ public class UserInterface extends JFrame {
                         }
                     });
                 }
+            }
 
 /**
  * Виводимо статичні дані на екран
  */
-            } else if (e.getSource() == showStaticData) {
+             else if (e.getSource() == showStaticData) {
                 String tabTitle = lookFor.getText();
                 int tabIndex = tabbedPane.indexOfTab(tabTitle);
                 if (tabIndex == -1) {
