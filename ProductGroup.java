@@ -1,9 +1,5 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ProductGroup {
 
@@ -55,20 +51,6 @@ public class ProductGroup {
         this.groupName = groupName;
     }
 
-    public void addProductToGroup(Product product) {
-        boolean productExists = false;
-        for (Product p : arrayOfProducts) {
-            if (p.getProductName().equals(product.getProductName())) {
-                productExists = true;
-                break;
-            }
-        }
-        if (productExists) {
-            new ErrorProductExists();
-        } else {
-            arrayOfProducts.add(product);
-        }
-    }
 
     public void setArrayOfProducts(ArrayList<Product> arrayOfProducts) {
         this.arrayOfProducts = arrayOfProducts;
@@ -77,7 +59,7 @@ public class ProductGroup {
     public void removeProductFromGroup(Product product) {
         boolean removed = arrayOfProducts.remove(product);
         if (!removed) {
-            new ErrorProductExists();
+            new SuccessAdding();
         }
     }
 
@@ -154,9 +136,69 @@ public class ProductGroup {
         }
     }
 
+    public void addProductToGroup(Product product) {
+        boolean productExists = false;
+        for (Product p : arrayOfProducts) {
+            if (p.getProductName().equals(product.getProductName())) {
+                productExists = true;
+                break;
+            }
+        }
+        if (productExists) {
+            new ErrorAdding();
+        } else {
+            arrayOfProducts.add(product);
+            addProductToFile(product, file.getPath());
+            new SuccessAdding();
+        }
+    }
+
+
+    public void addProductToFile(Product product, String directoryPath) {
+        File file = new File(directoryPath, this.file.getName()+".txt");
+
+        try {
+            // Створюємо вхідний потік для зчитування з файлу
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            // Створюємо тимчасовий файл
+            File tempFile = new File("tempFile.txt");
+            // Створюємо вихідний потік для запису в тимчасовий файл
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+            String line;
+            boolean productAdded = false; // Флаг, що показує, чи був вже доданий продукт до файлу
+
+            // Копіюємо вміст файлу в тимчасовий файл, пропускаючи дубльовані дані
+            while ((line = reader.readLine()) != null) {
+                if (!productAdded && line.equals(product.toString())) {
+                    // Якщо стрічка вже існує в файлі, пропускаємо її
+                    productAdded = true;
+                } else {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+            reader.close();
+
+            // Додаємо новий продукт до тимчасового файлу, якщо він ще не був доданий
+            if (!productAdded) {
+                writer.write(product.toString());
+                writer.newLine();
+            }
+
+            // Закриваємо потоки
+            writer.close();
+
+            // Перезаписуємо вміст основного файлу з тимчасового файлу
+            file.delete(); // Видаляємо старий файл
+            tempFile.renameTo(file); // Переіменовуємо тимчасовий файл на основний
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     public String toString() {
-        return "Опис = " + description +
-                ", Назва групи = " + groupName + "\n";
+        return "Назва групи = " + groupName +
+                ", Опис = " + description + "\n";
     }
 }

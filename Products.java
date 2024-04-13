@@ -57,4 +57,14 @@ public class Products {
         }
         return null; // Якщо продукт не знайдено
     }
+
+    public ProductGroup findGroupByName(String groupName) {
+        for (ProductGroup group : allGroup) {
+            if (group.getGroupName().equals(groupName)) {
+                return group;
+            }
+        }
+        return null; // Якщо групу не знайдено
+    }
+
 }

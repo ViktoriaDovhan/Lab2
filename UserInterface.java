@@ -55,7 +55,7 @@ public class UserInterface extends JFrame {
 
 
         allGroup.addGroupToAllGroup(neProd);
-        //   allGroup.addGroupToAllGroup(prod);
+        allGroup.addGroupToAllGroup(prod);
 
 
         menuBar = new JMenuBar();
@@ -131,62 +131,180 @@ public class UserInterface extends JFrame {
                     tabbedPane.addTab(deleteGroupOfProducts.getText(), new JPanel());
                 }
 
-//додавання продукту в якусь групу
+/**додавання продукту в якусь групу
+ *
+ */
             } else if (e.getSource() == addProduct) {
                 String tabTitle = lookFor.getText();
                 int tabIndex = tabbedPane.indexOfTab(tabTitle);
+
                 if (tabIndex == -1) {
-                    // Вкладка ще не існує, створюємо нову вкладку і додаємо на неї текстове поле
-                    JPanel newPanel = new JPanel();
+                    // Вкладка ще не існує, створюємо нову вкладку
+                    JPanel newPanel = new JPanel(new GridLayout(17, 1));
+
+                    // Створюємо кнопку
                     JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
+
+                    // Додаємо кнопку на панель
+                    newPanel.add(showAllGroupsbtn);
+
                     showAllGroupsbtn.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            if (e.getSource() == showAllGroupsbtn) {
-                                for (ProductGroup productGroup : allGroup.getAllGroupArray()) {
-                                    JLabel label = new JLabel(String.valueOf(productGroup));
-                                    newPanel.add(label);
+                            // Очищаємо вміст панелі перед додаванням нових елементів
+                            newPanel.removeAll();
 
+                            for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                newPanel.add(new JLabel(String.valueOf(group)));
+                            }
+
+                            JTextField textField = new JTextField(20);
+                            newPanel.add(new JLabel());
+                            newPanel.add(new JLabel("Введіть назву групи, В яку хочете додати продукт: "));
+                            newPanel.add(textField);
+
+                            textField.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    boolean found = false;
+
+                                    for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                        if (textField.getText().equals(group.getGroupName())) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!found) {
+                                        JOptionPane.showMessageDialog(null, "Групу не знайдено.", "Помилка", JOptionPane.ERROR_MESSAGE);
+                                    } else {
+                                        // Додати додаткові компоненти для введення даних продукту
+                                        newPanel.add(new JLabel("Введіть назву продукта: "));
+                                        JTextField nameField = new JTextField(20);
+                                        newPanel.add(nameField);
+
+                                        newPanel.add(new JLabel("Введіть опис продукта: "));
+                                        JTextField descriptionField = new JTextField(20);
+                                        newPanel.add(descriptionField);
+
+                                        newPanel.add(new JLabel("Введіть назву країни виробника: "));
+                                        JTextField countryNameField = new JTextField(20);
+                                        newPanel.add(countryNameField);
+
+                                        newPanel.add(new JLabel("Введіть кількість: "));
+                                        JTextField countField = new JTextField(20);
+                                        newPanel.add(countField);
+
+                                        newPanel.add(new JLabel("Введіть ціну: "));
+                                        JTextField priceField = new JTextField(20);
+                                        newPanel.add(priceField);
+
+                                        JButton create = new JButton("Створити");
+                                        create.addActionListener(new ActionListener() {
+                                            @Override
+                                            public void actionPerformed(ActionEvent e) {
+                                                if (e.getSource() == create) {
+                                                    // Збираємо дані для створення продукту
+                                                    String[] productData = {
+                                                            nameField.getText(),
+                                                            descriptionField.getText(),
+                                                            countryNameField.getText(),
+                                                            countField.getText(),
+                                                            priceField.getText()
+                                                    };
+                                                    // Створюємо новий продукт
+                                                    Product product = new Product(productData);
+
+                                                    // Додаємо продукт до відповідної групи
+                                                    for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                                        if (textField.getText().equals(group.getGroupName())) {
+                                                            group.addProductToGroup(product);
+
+                                                            break;
+                                                        }
+                                                    }
+                                                    newPanel.revalidate();
+                                                    newPanel.repaint();
+                                                }
+                                            }
+                                        });
+                                        newPanel.add(create);
+
+                                        // Оновлюємо вміст панелі
+                                        newPanel.revalidate();
+                                        newPanel.repaint();
+                                    }
                                 }
-                            }
+                            });
                         }
                     });
 
-                    //JTextField textField = new JTextField(20); // Створення текстового поля
-                    //newPanel.add(textField); // Додавання текстового поля на нову панель
-                    tabbedPane.addTab(tabTitle, newPanel); // Додавання нової вкладки разом з панеллю
-/*
-                    // Логіка з пошуком товару
-                    textField.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent event) {
-                            String productName = textField.getText();
-                            Product foundProduct = allGroup.findProductByName(productName);
-                            if (foundProduct != null) {
-                                // Створення та налаштування вмісту вкладки знайденого товару
-                                JPanel productPanel = new JPanel();
-                                JLabel productInfoLabel = new JLabel(String.valueOf(foundProduct));
-
-                                // Додавання тексту з інформацією про продукт
-                                productPanel.add(productInfoLabel);
-                                // Додавання панелі товару на вкладку
-                                tabbedPane.add(tabTitle, productPanel);
-                                tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1); // Перехід на нову вкладку
-                            } else {
-                                JOptionPane.showMessageDialog(null, "Товар не знайдено.", "Помилка", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-                    });
-                    */
+                    // Додаємо нову панель на вкладку
+                    tabbedPane.addTab(tabTitle, newPanel);
                 }
+            }
+
 
 //додавання групи до усіх груп продуктів
-            } else if (e.getSource() == addGroupOfProducts) {
-                if (tabbedPane.indexOfTab(addGroupOfProducts.getText()) == -1) {
-                    tabbedPane.addTab(addGroupOfProducts.getText(), new JPanel());
+            else if (e.getSource() == addGroupOfProducts) {
+                {
+                    String tabTitle = lookFor.getText();
+                    int tabIndex = tabbedPane.indexOfTab(tabTitle);
+
+                    if (tabIndex == -1) {
+                        // Вкладка ще не існує, створюємо нову вкладку
+                        JPanel newPanel = new JPanel(new GridLayout(17, 1));
+
+                        // Створюємо кнопку
+                        JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
+
+                        // Додаємо кнопку на панель
+                        newPanel.add(showAllGroupsbtn);
+
+                        showAllGroupsbtn.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                // Очищаємо вміст панелі перед додаванням нових елементів
+                                newPanel.removeAll();
+
+                                for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                    newPanel.add(new JLabel(String.valueOf(group)));
+                                }
+
+                                JTextField textField = new JTextField(20);
+                                newPanel.add(new JLabel());
+                                newPanel.add(new JLabel("Введіть назву групи, яку хочете: "));
+                                newPanel.add(textField);
+
+                                textField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        boolean found = false;
+
+                                        for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                            if (textField.getText().equals(group.getGroupName())) {
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!found) {
+
+                                        } else{
+
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        // Додаємо нову панель на вкладку
+                        tabbedPane.addTab(tabTitle, newPanel);
+                    }
                 }
 
 //редагування інформації про продукт
-            } else if (e.getSource() == editProduct) {
+            }else if (e.getSource() == editProduct) {
                 if (tabbedPane.indexOfTab(editProduct.getText()) == -1) {
                     tabbedPane.addTab(editProduct.getText(), new JPanel());
                 }
@@ -208,7 +326,9 @@ public class UserInterface extends JFrame {
                 }
 
 
-//пошук якогось продукту
+/**пошук якогось продукту
+ *
+ */
             } else if (e.getSource() == lookFor) {
                 String tabTitle = lookFor.getText();
                 int tabIndex = tabbedPane.indexOfTab(tabTitle);
@@ -228,21 +348,21 @@ public class UserInterface extends JFrame {
                             Product foundProduct = allGroup.findProductByName(productName);
                             if (foundProduct != null) {
                                 // Створення та налаштування вмісту вкладки знайденого товару
-                                JPanel productPanel = new JPanel();
                                 JLabel productInfoLabel = new JLabel(String.valueOf(foundProduct));
-
                                 // Додавання тексту з інформацією про продукт
-                                productPanel.add(productInfoLabel);
-                                // Додавання панелі товару на вкладку
-                                tabbedPane.add(tabTitle, productPanel);
-                                tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1); // Перехід на нову вкладку
+                                newPanel.add(productInfoLabel);
                             } else {
                                 JOptionPane.showMessageDialog(null, "Товар не знайдено.", "Помилка", JOptionPane.ERROR_MESSAGE);
                             }
+                            // Перемальовуємо панель для оновлення вмісту
+                            newPanel.revalidate();
+                            newPanel.repaint();
                         }
                     });
                 }
             }
+
+
         }
     }
 

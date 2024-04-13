@@ -63,10 +63,10 @@ public class Product {
 
     @Override
     public String toString() {
-        return " Назва= " + productName +
-                ", Опис= " + description +
-                ", Виробник= " + manufacturer +
-                ", Кількість= " + quantity +
-                ", Ціна= " + price;
+        return productName + ";" +
+                description + ";" +
+                manufacturer + ";" +
+                quantity + ";" +
+                price;
     }
 }
