@@ -235,7 +235,4 @@ public class ProductGroup {
                 ", Опис = " + description + "\n";
     }
 
-    public void editProductInGroup(Product productToEdit) {
-
-    }
 }

@@ -495,7 +495,9 @@ public class UserInterface extends JFrame {
                 }
             }
 
-//редагування інформації про продукт
+/**редагування інформації про продукт
+ *
+ */
             else if (e.getSource() == editProduct) {
                 String tabTitle = editProduct.getText();
                 int tabIndex = tabbedPane.indexOfTab(tabTitle);
