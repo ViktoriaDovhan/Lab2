@@ -66,13 +66,6 @@ public class ProductGroup {
         }
     }
 
-    public void editGroup(String groupName, String newGroupName, String newDescription) {
-        if (this.groupName.equals(groupName)) {
-            this.groupName = newGroupName;
-            this.description = newDescription;
-        }
-    }
-
 
     public void addProductToGroup(Product product, Products allGroups) throws IOException {
         boolean productExists = false;
@@ -104,7 +97,7 @@ public class ProductGroup {
     }
 
 
-    public void addProductToFile(Product product, String directoryPath) throws IOException {
+    private void addProductToFile(Product product, String directoryPath) throws IOException {
         File file = new File(directoryPath, this.file.getName() + ".txt");
         file.createNewFile();
 
@@ -149,7 +142,7 @@ public class ProductGroup {
     }
 
 
-    public void removeSomeProductInFile(Product product) throws IOException {
+    private void removeSomeProductInFile(Product product) throws IOException {
         // Отримуємо шлях до файлу
         String filePath = file.getPath() + "\\" + file.getName() + ".txt";
 
@@ -201,9 +194,48 @@ public class ProductGroup {
         return null;
     }
 
+    public void editGroup(String newGroupName, String newDescription) {
+
+        this.groupName = newGroupName;
+        this.description = newDescription;
+        renameFile(newGroupName);
+
+    }
+
+    private void renameFile(String newName) {
+        // Перейменування папки
+        File newFolder = new File(file.getParent() + "\\" + newName);
+        if (file.renameTo(newFolder)) {
+            file = newFolder; // Оновлюємо посилання на папку у вашому класі
+
+            // Перейменування текстового файлу
+            String fileName = file.getName(); // Отримуємо назву файлу
+            String newFileName = newName + ".txt"; // Формуємо нову назву файлу
+            File[] files = file.listFiles(); // Отримуємо список файлів у папці
+            for (File f : files) {
+                if (f.isFile()) { // Перевіряємо, що це файл, а не підпапка
+                    File newFile = new File(newFolder.getPath() + "\\" + newFileName);
+                    if (f.renameTo(newFile)) {
+                        new SuccessGroupEditing();
+                    } else {
+                        new ErrorGroupEditing();
+                    }
+                }
+            }
+
+        } else {
+            new ErrorGroupEditing();
+        }
+    }
+
+
     @Override
     public String toString() {
         return "Назва групи = " + groupName +
                 ", Опис = " + description + "\n";
+    }
+
+    public void editProductInGroup(Product productToEdit) {
+
     }
 }
