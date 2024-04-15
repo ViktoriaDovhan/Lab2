@@ -184,10 +184,10 @@ public class UserInterface extends JFrame {
                                                     try {
                                                         finalGroupToDeleteFrom.removeProductFromGroup(productToDelete);
                                                     } catch (IOException ex) {
-                                                        new ErrorGroupDeleting();
+                                                        new ErrorProductDeleting();
                                                     }
                                                 } else {
-                                                    new ErrorProductExists();
+                                                    new ErrorProductDeleting();
                                                 }
                                             }
                                         });
@@ -199,7 +199,7 @@ public class UserInterface extends JFrame {
                                         newPanel.revalidate();
                                         newPanel.repaint();
                                     } else {
-                                        new ErrorGroupExists();
+                                        new ErrorGroupDeleting();
                                     }
                                 }
                             });
@@ -601,6 +601,7 @@ public class UserInterface extends JFrame {
                                                                 // Додати оновлений продукт до групи
                                                                 try {
                                                                     finalGroupToEditFrom.addProductToGroup(productToEdit, allGroup);
+                                                                    new SuccessProductEditing();
                                                                 } catch (IOException ex) {
                                                                     throw new RuntimeException(ex);
                                                                 }
@@ -610,12 +611,12 @@ public class UserInterface extends JFrame {
                                                         throw new RuntimeException(ex);
                                                     }
                                                 } else {
-                                                    new ErrorProductExists();
+                                                    new ErrorGroupEditing();
                                                 }
                                             }
                                         });
                                     } else {
-                                        new ErrorGroupExists();
+                                        new ErrorGroupEditing();
                                     }
                                 }
                             });
@@ -780,7 +781,7 @@ public class UserInterface extends JFrame {
                     // Вкладка ще не існує, створюємо нову вкладку і додаємо на неї текстове поле
                     JPanel newPanel = new JPanel();
                     newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.Y_AXIS)); // Встановлюємо LayoutManager
-
+                    newPanel.add(new JLabel("назва, опис, виробник, кількість на складі, ціна за одиницю" + "\n"));
                     // Перебираємо всі групи товарів
                     for (ProductGroup group : allGroup.getAllGroupArray()) {
                         // Створюємо JLabel для назви групи

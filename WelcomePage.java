@@ -70,4 +70,3 @@ public class WelcomePage extends JFrame {
         welcomePage.setVisible(true);
     }
 }
-

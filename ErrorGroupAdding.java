@@ -13,7 +13,7 @@ public class ErrorGroupAdding extends JFrame {
         super.setLayout(new FlowLayout());
         super.setVisible(true);
 
-        JLabel errorLabel = new JLabel("Групу не було додано, адже такий вже існує");
+        JLabel errorLabel = new JLabel("Групу не було додано, адже така вже існує");
         okButton = new JButton("OK");
         okButton.addActionListener(new WrongListener());
 

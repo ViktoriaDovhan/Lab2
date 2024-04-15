@@ -13,7 +13,7 @@ public class ErrorProductDeleting extends JFrame {
         super.setLayout(new FlowLayout());
         super.setVisible(true);
 
-        JLabel errorLabel = new JLabel("Такого продукта не існує, немаождиво видалити!");
+        JLabel errorLabel = new JLabel("Такого продукта не існує, неможливо видалити!");
         okButton = new JButton("OK");
         okButton.addActionListener(new WrongListener());
 

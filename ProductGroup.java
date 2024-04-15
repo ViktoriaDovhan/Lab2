@@ -62,7 +62,9 @@ public class ProductGroup {
         boolean removed = arrayOfProducts.remove(product);
         removeSomeProductInFile(product);
         if (!removed) {
-            new SuccessProductAdding();
+            new ErrorProductDeleting();
+        }else{
+            new SuccessProductDeleting();
         }
     }
 
