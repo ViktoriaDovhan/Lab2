@@ -69,4 +69,12 @@ public class Product {
                 quantity + ";" +
                 price;
     }
+
+    public String toSting(String str) {
+        return "Назва продукта: " + productName + ", " +
+                "Опис: " + description + "\n" + ", " +
+                "Назва виробника: " + manufacturer + "\n" + ", " +
+                "Кількість на складі: " + quantity + "\n" + ", " +
+                "Ціна продукта: " + price + " грн " + "\n";
+    }
 }

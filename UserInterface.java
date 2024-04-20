@@ -25,6 +25,7 @@ public class UserInterface extends JFrame {
     private JMenuItem editGroupOfProducts;
     private JMenuItem lookFor;
     private JMenuItem showStaticData;
+    private JMenuItem addingAndWritting;
     String[] one = {"Непродовольчі товари", "Класні товари"};
     String[] two = {"Продовольчі товари", "Хороші товари"};
 
@@ -74,6 +75,7 @@ public class UserInterface extends JFrame {
         editGroupOfProducts = new JMenuItem("Редагувати групу товарів");
         lookFor = new JMenuItem("Пошук товару");
         showStaticData = new JMenuItem("Виведення статичних даних");
+        addingAndWritting = new JMenuItem("Додавання і списання продукта");
 
         menu.add(deleteProduct);
         menu.add(deleteGroupOfProducts);
@@ -87,6 +89,7 @@ public class UserInterface extends JFrame {
         // загальна вартість товару на складі (кількість * на ціну),
         // загальна вартість товарів в групі товарів.
         menu.add(showStaticData);
+        menu.add(addingAndWritting);
         menuBar.add(menu);
         setJMenuBar(menuBar);
 
@@ -104,6 +107,7 @@ public class UserInterface extends JFrame {
         editGroupOfProducts.addActionListener(menuListener);
         lookFor.addActionListener(menuListener);
         showStaticData.addActionListener(menuListener);
+        addingAndWritting.addActionListener(menuListener);
 
         // Додавання слухача подій миші для вкладок (подвійне клацання == закриття вкладки)
         tabbedPane.addMouseListener(new MouseAdapter() {
@@ -756,7 +760,7 @@ public class UserInterface extends JFrame {
 
                                 // Додавання інформації про знайдені продукти
                                 for (Product product : matchingProducts) {
-                                    newPanel.add(new JLabel(product.toString() + "\n"));
+                                    newPanel.add(new JLabel(product.toSting("lkj") + "\n"));
                                 }
 
 
@@ -799,7 +803,7 @@ public class UserInterface extends JFrame {
 
                         // Перебираємо всі продукти у групі і створюємо для них JLabel
                         for (Product product : group.getArrayOfProducts()) {
-                            JLabel productLabel = new JLabel("Продукт: " + product.toString());
+                            JLabel productLabel = new JLabel("Продукт: " + product.toSting("fwef"));
                             newPanel.add(productLabel);
                         }
                     }
@@ -812,6 +816,129 @@ public class UserInterface extends JFrame {
 
                     // Додаємо нову вкладку з панеллю у табпенел
                     tabbedPane.addTab(tabTitle, newPanel);
+                }
+            }
+            //списання додавання продукта
+            else if (e.getSource() == addingAndWritting) {
+                {
+                    String tabTitle = addingAndWritting.getText();
+                    int tabIndex = tabbedPane.indexOfTab(tabTitle);
+
+                    if (tabIndex == -1) {
+                        JPanel newPanel = new JPanel(new GridLayout(17, 1));
+
+                        JButton showAllGroupsbtn = new JButton("Показати всі групи: ");
+                        newPanel.add(showAllGroupsbtn);
+
+                        showAllGroupsbtn.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                newPanel.removeAll();
+
+                                for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                    newPanel.add(new JLabel(String.valueOf(group)));
+                                }
+
+                                JTextField textField = new JTextField(20);
+                                newPanel.add(new JLabel());
+                                newPanel.add(new JLabel("Введіть назву групи, в якій хочете відредагувати продукт: "));
+                                newPanel.add(textField);
+
+                                textField.addActionListener(new ActionListener() {
+                                    @Override
+                                    public void actionPerformed(ActionEvent e) {
+                                        String groupName = textField.getText();
+                                        ProductGroup groupToEditFrom = null;
+
+                                        // Знаходимо групу за введеною назвою
+                                        for (ProductGroup group : allGroup.getAllGroupArray()) {
+                                            if (groupName.equals(group.getGroupName())) {
+                                                groupToEditFrom = group;
+                                                break;
+                                            }
+                                        }
+
+                                        if (groupToEditFrom != null) {
+                                            newPanel.removeAll(); // Очистка панелі перед виведенням наступних компонентів
+
+                                            JLabel nameLabel = new JLabel("Введіть назву продукту, який хочете відредагувати: ");
+                                            JTextField nameField = new JTextField(20);
+                                            JButton editbtn = new JButton("Відредагувати");
+                                            newPanel.add(nameLabel);
+                                            newPanel.add(nameField);
+                                            newPanel.add(editbtn);
+
+                                            ProductGroup finalGroupToEditFrom = groupToEditFrom;
+                                            editbtn.addActionListener(new ActionListener() {
+                                                @Override
+                                                public void actionPerformed(ActionEvent e) {
+                                                    String productName = nameField.getText();
+
+                                                    // Перевіряємо, чи існує продукт з введеною назвою у групі
+                                                    Product productToEdit = finalGroupToEditFrom.getProductByName(productName);
+                                                    if (productToEdit != null) {
+
+                                                        // Додати додаткові компоненти для введення даних продукту
+                                                        newPanel.removeAll(); // Очистка панелі перед виведенням наступних компонентів
+
+
+                                                        newPanel.add(new JLabel("Введіть нову кількість: "));
+                                                        JTextField newCountField = new JTextField(20);
+                                                        newPanel.add(newCountField);
+
+
+                                                        JButton saveButton = new JButton("Зберегти зміни");
+                                                        newPanel.add(saveButton);
+
+                                                        saveButton.addActionListener(new ActionListener() {
+                                                            @Override
+                                                            public void actionPerformed(ActionEvent e) {
+                                                                // Оновити дані продукту
+                                                                int newCount = 0;
+                                                                try {
+                                                                    newCount = Integer.parseInt(newCountField.getText());
+                                                                } catch (NumberFormatException ex) {
+                                                                    JOptionPane.showMessageDialog(null, "Неправильний формат числа", "Помилка", JOptionPane.ERROR_MESSAGE);
+                                                                    return;
+                                                                }
+
+                                                                if (0 > productToEdit.getQuantity() + newCount) {
+                                                                    JOptionPane.showMessageDialog(null, "Кількість продуктів на складі не може бути < 0", "Помилка", JOptionPane.ERROR_MESSAGE);
+                                                                    return;
+                                                                }
+
+
+                                                                // Оновити дані продукту
+                                                                productToEdit.setQuantity(productToEdit.getQuantity() + newCount);
+
+
+                                                                // Додати оновлений продукт до групи
+                                                                try {
+                                                                    finalGroupToEditFrom.removeProductFromGroup(productToEdit);
+                                                                    finalGroupToEditFrom.addProductToGroup(productToEdit, allGroup);
+                                                                    new SuccessProductEditing();
+                                                                } catch (IOException ex) {
+                                                                    throw new RuntimeException(ex);
+                                                                }
+                                                            }
+                                                        });
+                                                    } else {
+                                                        new ErrorGroupEditing();
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            new ErrorGroupEditing();
+                                        }
+                                    }
+                                });
+                                newPanel.revalidate(); // Оновлення панелі після додавання компонентів
+                                newPanel.repaint();
+                            }
+                        });
+
+                        tabbedPane.addTab(tabTitle, newPanel);
+                    }
                 }
             }
 
